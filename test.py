@@ -73,26 +73,45 @@ def parseSentenceExcel() :
 
 def startTest(testData) :
 	print("start test")
-	testCount = 0
-	correctCount = 0
+	positiveTestCount = 0
+	positiveCorrectCount = 0
+	negativeTestCount = 0
+	negativeCorrectCount = 0
 	for data in testData :
-		testCount = testCount + 1
 		score = scoreSentence(data[1])
-		if (score >= scoreAverage and data[0] >= 6) or (score < scoreAverage and data[0] <= 5):
-			correctCount = correctCount + 1
-			print("correct")
+		if data[0] >= 6 :
+			positiveTestCount = positiveTestCount + 1
+			if score >= scoreAverage :
+				positiveCorrectCount = positiveCorrectCount + 1
+				print("positive correct")
+			else :
+				print("positive wrong")
 		else :
-			print("wrong")
+			negativeTestCount = negativeTestCount + 1
+			if score < scoreAverage :
+				negativeCorrectCount = negativeCorrectCount + 1
+				print("negative correct")
+			else :
+				print("negative wrong")
+
 
 	print("end test")
-	return (testCount, correctCount)
+	return (positiveTestCount, negativeTestCount, positiveCorrectCount, negativeCorrectCount)
 
 def printResult(testResult) :
 	print("start printing result")
 	print("")
-	print("전체 횟수 : ", testResult[0])
-	print("정답 횟수 : ", testResult[1])
-	print("정답률 : ", (testResult[1] / testResult[0]))
+	print("전체 횟수 : ", testResult[0] + testResult[1])
+	print("정답 횟수 : ", testResult[2] + testResult[3])
+	print("전체 정답률 : ", ((testResult[2] + testResult[3]) / (testResult[0] + testResult[1])))
+	print("")
+	print("긍정 횟수 : ", testResult[0])
+	print("긍정 정답 횟수 : ", testResult[2])
+	print("긍정 정답률 : ", (testResult[2] / testResult[0]))
+	print("")
+	print("부정 횟수 : ", testResult[1])
+	print("부정 정답 횟수 : ", testResult[3])
+	print("부정 정답률 : ", (testResult[3] / testResult[1]))
 	print("")
 	print("end printing result")
 
