@@ -1,15 +1,18 @@
 # -*- encoding: utf8 -*-
 
 from urllib.request import urlopen
+from urllib.parse import urlencode
 from bs4 import BeautifulSoup
 from threading import Thread
 from openpyxl import Workbook
 from os import makedirs, path
+import json
 
 grades = list()
 finished = list()
 movieCode = 0
 maxPage = 0
+exceptCount = 0
 
 def parseReply(replyList) :
 	result = list()
@@ -20,6 +23,12 @@ def parseReply(replyList) :
 			text = text[3:]
 
 		score = int(reply.find(class_='star_score').find('em').string)
+		
+		""" 맞춤법 검사
+		spellingUrl = "https://m.search.naver.com/p/csearch/ocontent/spellchecker.nhn?" + urlencode({'_callback':'a', 'q':text, 'where':'nexearch'})
+		text = json.loads(urlopen(spellingUrl).read()[2:-2])['message']['result']['notag_html']
+		"""
+
 		result.append((score, text))
 	
 	return result
@@ -35,20 +44,25 @@ def getOnePage(page) :
 	return parseReply(replyList)
 
 def getPages(ones) :
+	global exceptCount
+
 	print("start getting page. ones :", ones)
 	for tens in range(0, maxPage//10) :
 		try :
 			grades.extend(getOnePage(tens * 10 + ones))
 		except :
 			print("catch exception on", (tens * 10 + ones))
+			exceptCount = exceptCount + 1
 			pass
 	finished.append(ones)
 	print("end getting page. ones :", ones)
 	saveToExcel()
 
 def saveToExcel() :				# callback
-	print("called save to excel. finished :", len(finished))
-	if len(finished) == 10 :
+	global exceptCount
+
+	print("called save to excel. finished :", len(finished), "except count :", exceptCount)
+	if len(finished) + exceptCount == 10 :
 		print("start saving to excel")
 		wb_learn = Workbook()
 		wb_test  = Workbook()
@@ -92,9 +106,9 @@ def getPageCount() :
 def main() :
 	global movieCode
 	movieCode = int(input("movie code : "))
-
+	
 	getPageCount()
-
+	
 	for ones in range(1, 11) :
 		Thread(target=getPages, args=(ones,)).start()
 
